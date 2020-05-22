@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Windows Media Controller</string>
+    <string name="connected_to">Connected To: </string>
+    <string name="stop">Stop</string>
+    <string name="play">Play</string>
+    <string name="skip_forward">Skip Forward</string>
+    <string name="skip_backwards">Skip Backwards</string>
+    <string name="now_playing">Now Playing:</string>
+</resources>
