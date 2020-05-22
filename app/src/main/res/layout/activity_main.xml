@@ -48,30 +48,68 @@
         <ImageButton
             android:id="@+id/btnPrev"
             android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_height="100dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/wmc_skip_prev" />
+            android:background="@drawable/wmc_skip_prev"
+            android:backgroundTint="#009688"
+            android:onClick="OnPrev_Click" />
 
         <ImageButton
             android:id="@+id/btnPlay"
             android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_height="100dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/wmc_play" />
-
-        <ImageButton
-            android:id="@+id/btnStop"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/wmc_stop" />
+            android:background="@drawable/wmc_pause"
+            android:backgroundTint="#009688"
+            android:onClick="OnPause_Click" />
 
         <ImageButton
             android:id="@+id/btnNext"
             android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_height="100dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/wmc_skip_next" />
+            android:background="@drawable/wmc_skip_next"
+            android:backgroundTint="#009688"
+            android:onClick="OnNext_Click" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/volumeButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/mediaButtons"
+        tools:layout_editor_absoluteX="62dp">
+
+        <ImageButton
+            android:id="@+id/btnVolumeDown"
+            android:layout_width="70dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:background="@drawable/wmc_vol_down"
+            android:backgroundTint="#009688"
+            android:onClick="OnVolumeDown_Click" />
+
+        <ImageButton
+            android:id="@+id/btnMute"
+            android:layout_width="70dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:background="@drawable/wmc_vol_mute"
+            android:backgroundTint="#009688"
+            android:onClick="OnMute_Click" />
+
+        <ImageButton
+            android:id="@+id/btnVolumeUp"
+            android:layout_width="70dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:background="@drawable/wmc_vol_up"
+            android:backgroundTint="#009688"
+            android:onClick="OnVolumeUp_Click" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

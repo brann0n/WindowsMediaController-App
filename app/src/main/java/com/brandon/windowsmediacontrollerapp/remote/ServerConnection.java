@@ -1,6 +1,7 @@
 package com.brandon.windowsmediacontrollerapp.remote;
 
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -14,17 +15,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ServerConnection {
+public class ServerConnection extends Thread{
     private Client client;
     private List<RemoteServerCallback> listeners;
     private List<DataBufferModel> buffers;
     private ConnectionPipeLine pipeLine;
+
+    //private ArrayList<String> mMessages = new ArrayList<>();
+    private ArrayList<TransferCommandsObject> mMessages = new ArrayList<>();
+
+    private boolean mRun = true;
+
     public ServerConnection(){
         this.client = new Client();
         this.pipeLine = new ConnectionPipeLine();
         this.listeners = new ArrayList<>();
         this.buffers = new ArrayList<>();
     }
+
     /**
      * adds the event listeners
      * @param toAdd event listener object
@@ -32,21 +40,25 @@ public class ServerConnection {
     public void addListener(RemoteServerCallback toAdd) {
         listeners.add(toAdd);
     }
+
     private void OnCommandReceived(TransferCommandsObject obj){
         for(RemoteServerCallback callbacks: listeners){
             callbacks.OnCommandReceived(obj);
         }
     }
+
     private void OnDataReceived(TransferCommandsObject obj){
         for(RemoteServerCallback callbacks: listeners){
             callbacks.OnDataReceived(obj);
         }
     }
+
     private void OnResponseReceived(TransferCommandsObject obj){
         for(RemoteServerCallback callbacks: listeners){
             callbacks.OnResponseReceived(obj);
         }
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void startReceiver(){
         while(client.isConnected()){
@@ -101,12 +113,50 @@ public class ServerConnection {
             }
         }
     }
+
+    private Thread serverThread;
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void run(){
+        while(mRun){
+            try {
+                Connect("192.168.2.61", 1222);
+                serverThread = new Thread(this::startReceiver);
+                serverThread.start();
+
+                while(mRun){
+                    TransferCommandsObject message;
+                    synchronized (mMessages) {
+                        while (mMessages.isEmpty()) {
+                            try {
+                                mMessages.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        // Get message and remove from the list
+                        message = mMessages.get(0);
+                        mMessages.remove(0);
+                    }
+
+                    //do my code here
+                    Log.d("ServerConnection", "Message: " + message);
+                    sendCommand(message.Command, message.Value);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private TransferCommandsObject createTransferObject(String command, String value){
         TransferCommandsObject model = new TransferCommandsObject();
         model.Command = command;
         model.Value = value;
         return model;
     }
+
     public void sendResponse(String command, String value) {
         try {
             client.sendResponse(pipeLine.BufferSerialize(createTransferObject(command, value)));
@@ -115,6 +165,7 @@ public class ServerConnection {
             Disconnect();
         }
     }
+
     public void sendCommand(String command, String value) {
         try {
             client.sendCommand(pipeLine.BufferSerialize(createTransferObject(command, value)));
@@ -123,6 +174,7 @@ public class ServerConnection {
             Disconnect();
         }
     }
+
     public void sendData(String command, String value) {
         try {
             client.sendData(pipeLine.BufferSerialize(createTransferObject(command, value)));
@@ -131,12 +183,14 @@ public class ServerConnection {
             Disconnect();
         }
     }
+
     public static UUID getGuidFromByteArray(byte[] bytes) {
         ByteBuffer bb = ByteBuffer.wrap(bytes);
         long high = bb.getLong();
         long low = bb.getLong();
         return new UUID(high, low);
     }
+
     public static byte[] getBytesFromUUID(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
@@ -144,6 +198,7 @@ public class ServerConnection {
 
         return bb.array();
     }
+
     public void Disconnect() {
         try {
             client.stopConnection();
@@ -151,7 +206,15 @@ public class ServerConnection {
             e.printStackTrace();
         }
     }
+
     public void Connect(String ip, int port) throws IOException {
         client.startConnection(ip, port);
+    }
+
+    public void send(String Command, String value) {
+        synchronized (mMessages) {
+            mMessages.add(new TransferCommandsObject(Command, value));
+            mMessages.notify();
+        }
     }
 }
